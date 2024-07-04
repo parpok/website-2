@@ -17,6 +17,5 @@
 		width: 200px;
 		text-align: center;
 		background-color: #fff;
-		transition: 0.3s;
 	}
 </style>

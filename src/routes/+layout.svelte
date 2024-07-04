@@ -2,12 +2,25 @@
 	import Top from '$lib/Top.svelte';
 	import Bottom from '$lib/Bottom.svelte';
 	import './style.css';
-
-	import { page } from '$app/stores';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import { dev } from '$app/environment';
+	import { inject } from '@vercel/analytics';
+	import { page } from '$app/stores';
 
-	injectSpeedInsights();
-	// yes vercel will spy
+	import { GPDRAccept } from '$lib';
+	import { get } from 'svelte/store';
+	import GpdrToggle from '$lib/GPDRToggle.svelte';
+	let consent = get(GPDRAccept);
+
+	GPDRAccept.subscribe(value => {
+    consent = value;
+    if (consent) {
+		injectSpeedInsights();
+        inject({ mode: dev ? 'development' : 'production' });
+    }
+});
+
+// So now vercel will only spy when marked OK :3
 
 	const appName = $page.url.hostname;
 	$: title = [appName, ...$page.url.pathname.split('/').slice(1)].filter(Boolean).join(' - ');
@@ -19,6 +32,10 @@
 	<meta name="author" content="parpok" />
 	<meta name="keywords" content="{appName}, personal page, links, blog, projects, gallery" />
 	<link rel="icon" href="/avatar.png" />
+
+	<a rel="me" href="https://101010.pl/@parpok">⠀</a>
+	<a rel="me" href="https://misskey.parpok.lomza.pl/@parpok">⠀</a>
+	<!-- Links for those fediverse bots bruh  -->
 	<!-- This is just in case Svelte doesn't catch up with app.html -->
 </svelte:head>
 
@@ -27,6 +44,9 @@
 <div class="Container">
 	<slot></slot>
 </div>
+{#if consent === null}
+	<GpdrToggle />
+{/if}
 <Bottom />
 
 <style>
